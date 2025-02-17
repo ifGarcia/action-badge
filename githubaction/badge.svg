@@ -1,13 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="300" height="40">
   <rect rx="20" ry="20" width="300" height="40" fill="#555"/>
-  <rect rx="20" ry="20" x="150" width="150" height="40" fill="#4c1"/>
+  <rect rx="20" ry="20" x="150" width="150" height="40" fill="#808080"/>
   <text x="75" y="25" fill="#fff" font-family="Verdana" font-size="15" text-anchor="middle">Ambiente</text>
   <text x="225" y="25" fill="#fff" font-family="Verdana" font-size="15" text-anchor="middle">Tag</text>
 </svg>
-<!-- <svg xmlns="http://www.w3.org/2000/svg" width="100" height="20">
-  <rect width="100" height="20" fill="#555"/>
-  <rect x="37" width="63" height="20" fill="#4c1"/>
-  <text x="19.5" y="14" fill="#fff" font-family="Verdana" font-size="11">build</text>
-  <text x="50" y="14" fill="#fff" font-family="Verdana" font-size="11">passing</text>
-</svg>
- -->
