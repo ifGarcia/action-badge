@@ -1,0 +1,185 @@
+name: README.md - Create Badges
+
+on:
+  workflow_dispatch:
+    inputs:
+      repos:
+        description: 'Executar em repositórios especificos'
+        required: false
+      organization:
+        description: 'Organização'
+        required: true
+        type: choice
+        options:
+          - ifGarcia
+        default: ifGarcia
+
+jobs:
+  readme:
+    name: Add Badges
+    runs-on: ${{ vars.RUNNER_LOW }}
+    steps:
+      # - name: � Gerando token �
+      #   uses: Actions/generate-token@v1
+      #   id: generate-token
+      #   with:
+      #     org: Bradesco-Next
+      #     app-id: ${{ vars.AUTHENTICATION_AND_AUTHORIZATION_APP_ID }}
+      #     app-private-key: ${{ secrets.AUTHENTICATION_AND_AUTHORIZATION_PRIVATE_KEY }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Run script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOS_LIST: ${{ github.event.inputs.repos }}
+          ORGANIZATION: ${{ github.event.inputs.organization }}
+        run: |
+          python - <<EOF
+          import requests
+          import os
+          import base64
+          
+          GITHUB_API_URL = "https://api.github.com"
+          ORG_NAME = os.getenv('ORGANIZATION')
+          repos_list = os.getenv('REPOS_LIST')
+          BRANCH = "develop"
+          HEADERS = {
+              "Authorization": f"token {os.getenv('GITHUB_TOKEN')}",
+              "Accept": "application/vnd.github.v3+json"
+          }
+
+          def organize_envs(envs):
+              # Separar os ambientes por prefixo
+              tu_envs = sorted([env for env in envs if env['name'].startswith('tu')], key=lambda x: x['name'])
+              ti_envs = sorted([env for env in envs if env['name'].startswith('ti')], key=lambda x: x['name'])
+              th_envs = sorted([env for env in envs if env['name'].startswith('th')], key=lambda x: x['name'])
+              pr_envs = sorted([env for env in envs if env['name'].startswith('pr')], key=lambda x: x['name'])
+              # Concatenar os ambientes organizados
+              organized_envs = tu_envs + ti_envs + th_envs + pr_envs
+              if organized_envs:
+                  return organized_envs
+              else:
+                  print(f"❌ Erro nos nomes das envs.")
+                  exit(1)
+
+          def get_repos():
+              repos = []
+              page = 1
+              while True:
+                  url = f"https://api.github.com/orgs/{ORG_NAME}/repos?per_page=100&page={page}"
+                  response = requests.get(url, headers=HEADERS)
+                  if response.status_code == 200:
+                      data = response.json()
+                      if not data:
+                          break
+                      for repo in data:
+                          repos.append(repo['name'])
+                      page += 1
+                  else:
+                      print(f"❌ Erro ao listar repositórios. Status Code: {response.status_code}, Resposta: {response.text}")
+                      exit(1)
+              return repos
+
+          def check_envs(repo_name):
+              # print(f"Checking environments for repository: {repo_name}")
+              response = requests.get(f"{GITHUB_API_URL}/repos/{ORG_NAME}/{repo_name}/environments", headers=HEADERS)
+              if response.status_code == 200:
+                  envs = response.json().get('environments', [])
+                  print(f"   Found {len(envs)} environments")
+                  if len(envs) > 0:
+                      # envs = organize_envs(envs)
+                      return envs
+                  else:
+                      return False
+              print(f"Failed to fetch environments for {repo_name}: {response.status_code}")
+              return False
+
+          def update_readme(repo_name, envs):
+              # print(f"Updating README.md for repository: {repo_name}")
+              readme_url = f"{GITHUB_API_URL}/repos/{ORG_NAME}/{repo_name}/contents/README.md?ref={BRANCH}"
+              response = requests.get(readme_url, headers=HEADERS)
+              if response.status_code == 200:
+                  print(f"   Get README.md")
+                  readme_content = response.json()
+                  sha = readme_content['sha']
+                  content = readme_content['content']
+                  decoded_content = base64.b64decode(content).decode('utf-8')
+                  new_content = decoded_content
+                  urls_to_add = []
+
+                  for env in envs:
+                      url = f"![](https://github.com/Bradesco-Next/action-badge-deploy/blob/badge/badges/{repo_name}/{env['name']}.svg)"
+                      urls_to_add.append(url)
+
+                  all_urls_present = all(url in decoded_content for url in urls_to_add)
+                  
+                  if all_urls_present:
+                      print(f"   All URLs already present in README.md")
+                      return False
+                  else:
+                      # Excluir todas as URLs antigas e adicionar as novas
+                      for url in urls_to_add:
+                          if url in new_content:
+                             new_content = new_content.replace(url, "")
+                      new_content = new_content.replace("![]", "")
+                      new_content = f"\n\n{new_content}"
+                      for url in urls_to_add:
+                          new_content = f"{url}{new_content}"
+
+                  if new_content != decoded_content:
+                      print(f"   Updated README.md...")
+                      
+                      # Commit changes
+                      commit_message = "Update README.md with badges. [skip ci]"
+                      data = {
+                          "message": commit_message,
+                          "content": base64.b64encode(new_content.encode('utf-8')).decode('utf-8'),
+                          "sha": sha,
+                          "branch": BRANCH
+                      }
+
+                      response = requests.put(readme_url, headers=HEADERS, json=data)
+                      if response.status_code == 200:
+                          print(f"   Successfully updated README.md in {repo_name} on branch {data['branch']}")
+                      else:
+                          print(f"Failed to update README.md in {repo_name}: {response.status_code}")
+                      return True
+                  else:
+                    print(f"   No changes detected in README.md.")
+                    return False
+              else:
+                  print(f"Failed to fetch README.md for {repo_name}: {response.status_code}")
+              return False
+          
+          # def main():
+          #     repo_name = 'teste-rm'
+          #     print(f"{repo_name}")
+          #     envs = check_envs(repo_name)
+          #     if envs != False:
+          #         # print("Hi!!!")
+          #         update_readme(repo_name, envs)
+          
+          def main():
+              if not repos_list:
+              	repos = get_repos(GH_ORG, GH_TOKEN, filter_prefix, exception_suffix, exception_repos)
+              else:
+              	repos = repos_list.split(',')
+
+              for repo_name in repos:
+                print(f"{repo_name}")
+                envs = check_envs(repo_name)
+                if envs:
+                  update_readme(repo_name, envs)
+          
+          if __name__ == "__main__":
+              main()
+          EOF
