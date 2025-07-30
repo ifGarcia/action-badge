@@ -22,7 +22,7 @@ jobs:
         with:
           environment: env-com-token
           version: ${{ github.run_number }}
-          token: ${{ github.token }}
+          token: ${{ secrets.SECRET_TOKEN }}
           # token: ${{ steps.generate-token.outputs.token }}
 
       - name: Generate Badge - Com repetido
@@ -30,7 +30,7 @@ jobs:
         with:
           environment: env-com-token-rep
           version: 20
-          token: ${{ github.token }}
+          token: ${{ secrets.SECRET_TOKEN }}
           # token: ${{ steps.generate-token.outputs.token }}
 
       # - name: Generate Badge - Sem
