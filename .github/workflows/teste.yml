@@ -6,8 +6,8 @@ on:
 jobs:
   teste-badge:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    # permissions:
+    #   contents: write
     steps:
       # - name: Generate Token
       #   uses: Actions/generate-token@v1
