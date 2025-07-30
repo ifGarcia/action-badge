@@ -203,7 +203,7 @@ const main = async () => {
   }
 
   // Adiciona o arquivo ao Git
-  console.log(`Adicionando ${fileName} ao Git.`);
+  console.log(`Adicionando a badge no Git.`);
   try {
     const addResult = await git.cwd(repoPath).add(fileName);
     console.log(`${fileName} foi adicionado ao Git.`);
@@ -237,7 +237,7 @@ const main = async () => {
   console.log(`Fazendo push para ${repo_badge} na branch ${prBranch}...`);
   try {
     await tentarComRetries(() =>
-      git.cwd(repoPath).push([`https://oauth2:${TOKEN}@github.com/${repo}.git`, prBranch, '--force']),
+      git.cwd(repoPath).push([`https://oauth2:${TOKEN}@github.com/${owner_repo_badge}/${repo_badge}.git`, prBranch, '--force']),
       2,
       2000
     );
@@ -255,7 +255,7 @@ const main = async () => {
       octokit.pulls.create({
         owner: owner_repo_badge,
         repo: repo_badge,
-        title: `Update badges: ${environment} - ${version}`,
+        title: `Update badge: ${environment} - ${version}`,
         head: prBranch,
         base: branch_badge,
         body: `Badge ambiente: ${environment} versão: ${version}.`
