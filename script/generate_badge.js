@@ -21,14 +21,16 @@ async function tentarComRetries(fn, maxTentativas = 3, delayMs = 2000) {
 
 // Função principal
 const main = async () => {
-  const envName = process.env.environment;
+  const environment = process.env.environment;
   const version = process.env.version;
-  const TOKEN = process.env.token;
-  const branch = process.env.branch;
-  const repo = process.env.repo;
   
-  const repositorio = process.env.GITHUB_REPOSITORY.split('/')[1];
-  const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
+  const TOKEN = process.env.token;
+  
+  const repo_badge = process.env.repo.split('/')[1];
+  const owner_repo_badge = process.env.repo.split('/')[0];
+  const branch_badge = process.env.branch;
+
+  const repo_ctrl = process.env.GITHUB_REPOSITORY.split('/')[1];
 
   // Verificar se a versão já está presente no badge remoto
   console.log('Verificando versão atual do badge remoto...');
@@ -38,10 +40,10 @@ const main = async () => {
   let remoteContent = '';
   try {
     const { data } = await octokit.repos.getContent({
-      owner,
-      repo: repo,
-      path: `badges/${repositorio}/${envName}.svg`,
-      ref: branch
+      owner: owner_repo_badge,
+      repo: repo_badge,
+      path: `badges/${repo_ctrl}/${environment}.svg`,
+      ref: branch_badge
     });
   
     if (data && data.content) {
@@ -78,28 +80,27 @@ const main = async () => {
   }
 
   // Verificar se as variáveis estão definidas
-  if (!envName || !version || !TOKEN || !repositorio || !owner) {
+  if (!environment || !version || !TOKEN || !repo_ctrl || !branch_badge) {
     throw new Error('Uma ou mais variáveis de ambiente não estão definidas.');
   }
 
   console.log(`============================================================`);
-  console.log(`Environment: ${envName}`);
+  console.log(`Repository: ${repo_ctrl}`);
+  console.log(`Environment: ${environment}`);
   console.log(`Version: ${version}`);
-  console.log(`Repository: ${repositorio}`);
-  console.log(`Branch: ${branch}`);
 
   const git = simpleGit();
   // Variavel com o caminho do 
-  const Path = '/home/runner/_work/next-ca-gateway-interno-azure/action-badge-deploy';
+  const repoPath = `${process.cwd()}/repo-clone`;
 
   // Log do diretório atual
-  console.log(`Diretório atual: ${process.cwd()}`);
+  console.debug(`Diretório atual: ${process.cwd()}`);
 
   // Clonar o repositório usando o token
-  console.log(`Clonando o repositório https://github.com/Bradesco-Next/action-badge-deploy.git.`);
+  console.log(`Clonando o repositório`);
   try {
     await tentarComRetries(() =>
-      git.clone(`https://oauth2:${TOKEN}@github.com/Bradesco-Next/action-badge-deploy.git`, repoPath, ['--branch', branch]),
+      git.clone(`https://oauth2:${TOKEN}@github.com/${owner_repo_badge}/${repo_badge}.git`, repoPath, ['--branch', branch_badge]),
       2,
       500
     );
@@ -141,12 +142,12 @@ const main = async () => {
     return context.measureText(text).width;
   };
   
-  const workflowWidth = measureTextWidth(envName, `${config.fontSize}px ${config.fontFamily}`) + 28; // 14px padding on each side
+  const workflowWidth = measureTextWidth(environment, `${config.fontSize}px ${config.fontFamily}`) + 28; // 14px padding on each side
   const stateWidth = measureTextWidth(version, `${config.fontSize}px ${config.fontFamily}`) + 12; // 6px padding on each side
   
   const badge = `
     <svg xmlns="http://www.w3.org/2000/svg" width="${workflowWidth + stateWidth + 4}" height="20">
-      <title>${envName} - ${version}</title>
+      <title>${environment} - ${version}</title>
       <defs>
         <linearGradient id="workflow-fill" x1="50%" y1="0%" x2="50%" y2="100%">
           <stop stop-color="${config.colors.workflowGradientStart}" offset="0%"/>
@@ -161,10 +162,10 @@ const main = async () => {
         <g font-family="${config.fontFamily}" font-size="${config.fontSize}">
           <path id="workflow-bg" d="M0,3 C0,1.3431 1.3552,0 3,0 L${workflowWidth},0 L${workflowWidth},20 L3,20 C1.3552,20 0,18.6569 0,17 L0,3 Z" fill="url(#workflow-fill)" fill-rule="nonzero" rx="5" ry="5"/>
           <text fill="${config.colors.textShadow}" fill-opacity=".3">
-            <tspan x="14" y="15" aria-hidden="true">${envName}</tspan>
+            <tspan x="14" y="15" aria-hidden="true">${environment}</tspan>
           </text>
           <text fill="${config.colors.text}">
-            <tspan x="14" y="14">${envName}</tspan>
+            <tspan x="14" y="14">${environment}</tspan>
           </text>
         </g>
         <g transform="translate(${workflowWidth})" font-family="${config.fontFamily}" font-size="${config.fontSize}">
@@ -179,8 +180,8 @@ const main = async () => {
       </g>
     </svg>`;
 
-  const fileName = `/home/runner/_work/next-ca-gateway-interno-azure/action-badge-deploy/badges/${repositorio}/${envName}.svg`;
-
+  const fileName = ` ${repoPath}/badges/${repo_ctrl}/${environment}.svg`;
+  
   console.log(`File Name: ${fileName}`);
 
   // Certifique-se de que o diretório existe
@@ -212,7 +213,7 @@ const main = async () => {
   }
 
   // Faz o commit
-  const commitMessage = `Update badges: ${envName} - ${version}`;
+  const commitMessage = `Update badges: ${environment} - ${version}`;
   console.log(`Fazendo commit com a mensagem: "${commitMessage}"...`);
   try {
     const commitResult = await git.cwd(repoPath).commit(commitMessage);
@@ -222,7 +223,7 @@ const main = async () => {
   }
 
   // Criar uma nova branch para o pull request
-  const prBranch = `${repositorio}-${envName}-${version}`;
+  const prBranch = `${repo_ctrl}-${environment}-${version}`;
   console.log(`Criando nova branch: ${prBranch}...`);
   try {
     const checkoutResult = await git.cwd(repoPath).checkoutLocalBranch(prBranch);
@@ -233,10 +234,10 @@ const main = async () => {
   }
 
   // Subir a nova branch (push)
-  console.log(`Fazendo push para https://github.com/Bradesco-Next/action-badge-deploy.git na branch ${prBranch}...`);
+  console.log(`Fazendo push para ${repo_badge} na branch ${prBranch}...`);
   try {
     await tentarComRetries(() =>
-      git.cwd(repoPath).push([`https://oauth2:${TOKEN}@github.com/Bradesco-Next/action-badge-deploy.git`, prBranch, '--force']),
+      git.cwd(repoPath).push([`https://oauth2:${TOKEN}@github.com/${repo}.git`, prBranch, '--force']),
       2,
       2000
     );
@@ -252,12 +253,12 @@ const main = async () => {
   try {
     prResult = await tentarComRetries(() =>
       octokit.pulls.create({
-        owner,
-        repo: 'action-badge-deploy',
-        title: `Update badges: ${envName} - ${version}`,
+        owner: owner_repo_badge,
+        repo: repo_badge,
+        title: `Update badges: ${environment} - ${version}`,
         head: prBranch,
-        base: branch,
-        body: `Este pull request atualiza os badges para o ambiente ${envName} com a versão ${version}.`
+        base: branch_badge,
+        body: `Badge ambiente: ${environment} versão: ${version}.`
       }),
       5,
       2000
@@ -272,8 +273,8 @@ const main = async () => {
   const issueNumber = prResult.data.number;
   try {
     await octokit.issues.addLabels({
-      owner,
-      repo: 'action-badge-deploy',
+      owner: owner_repo_badge,
+      repo: repo_badge,
       issue_number: issueNumber,
       labels: ['badge']
     });
@@ -284,14 +285,14 @@ const main = async () => {
 
   // Adicionar a milestone 'Badges' ao pull request
   const milestones = await octokit.issues.listMilestones({
-    owner,
-    repo: 'action-badge-deploy'
+    owner: owner_repo_badge,
+    repo: repo_badge
   });
   const milestone = milestones.data.find(m => m.title === 'Badges');
   if (milestone) {
     await octokit.issues.update({
-      owner,
-      repo: 'action-badge-deploy',
+      owner: owner_repo_badge,
+      repo: repo_badge,
       issue_number: issueNumber,
       milestone: milestone.number
     });
@@ -308,16 +309,16 @@ const main = async () => {
   while (attempt < maxAttempts && !mergeSuccess) {
     attempt++;
     console.log(`      Tentativa ${attempt}: Atualizando a branch do pull request com as últimas mudanças da branch base...`);
-    await git.cwd(repoPath).fetch('origin', branch);
-    await git.cwd(repoPath).mergeFromTo(branch, prBranch);
+    await git.cwd(repoPath).fetch('origin', branch_badge);
+    await git.cwd(repoPath).mergeFromTo(branch_badge, prBranch);
     console.log(`Branch atualizada.`);
 
     // Fazer o merge do pull request com bypass das regras de proteção
     console.log(`      Tentativa ${attempt}: Fazendo merge do pull request...`);
     try {
       const mergeResult = await octokit.pulls.merge({
-        owner,
-        repo: 'action-badge-deploy',
+        owner: owner_repo_badge,
+        repo: repo_badge,
         pull_number: issueNumber,
         merge_method: 'merge',
         bypass_rules: true // Adiciona a opção de bypass das regras de proteção
@@ -334,8 +335,8 @@ const main = async () => {
         console.log(`Excluindo a branch ${prBranch} via API...`);
         try {
           const deleteResult = await octokit.git.deleteRef({
-            owner,
-            repo: 'action-badge-deploy',
+            owner: owner_repo_badge,
+            repo: repo_badge,
             ref: `heads/${prBranch}`
           });
           if (deleteResult.status === 204) {
