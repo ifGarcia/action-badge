@@ -78,14 +78,14 @@ const main = async () => {
   }
 
   // Verificar se as variáveis estão definidas
-  if (!envName || !version || !TOKEN || !sitorio || !owner) {
+  if (!envName || !version || !TOKEN || !repositorio || !owner) {
     throw new Error('Uma ou mais variáveis de ambiente não estão definidas.');
   }
 
   console.log(`============================================================`);
   console.log(`Environment: ${envName}`);
   console.log(`Version: ${version}`);
-  console.log(`Repository: ${sitorio}`);
+  console.log(`Repository: ${repositorio}`);
   console.log(`Branch: ${branch}`);
 
   const git = simpleGit();
