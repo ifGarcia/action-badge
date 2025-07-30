@@ -46,6 +46,6 @@ runs:
         branch: ${{ inputs.branch }}
         environment: ${{ inputs.environment }}
         version: ${{ inputs.version }}
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ github.token }}
       run: node ${{ github.action_path }}/script/generate_badge.js
       shell: bash
