@@ -22,7 +22,7 @@ runs:
   steps:
     # - name: � Generate Token �
     #   if: ${{ !inputs.token }}
-    #   uses: Bradesco-Actions/generate-token@v1
+    #   uses: Actions/generate-token@v1
     #   id: generate-token
     #   with:
     #     org: ${{ env.org }}
