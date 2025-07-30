@@ -180,7 +180,7 @@ const main = async () => {
       </g>
     </svg>`;
 
-  const fileName = ` ${repoPath}/badges/${repo_ctrl}/${environment}.svg`;
+  const fileName = `${repoPath}/badges/${repo_ctrl}/${environment}.svg`;
   
   console.log(`File Name: ${fileName}`);
 
