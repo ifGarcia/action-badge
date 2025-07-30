@@ -24,8 +24,9 @@ const main = async () => {
   const envName = process.env.environment;
   const version = process.env.version;
   const TOKEN = process.env.token;
-
-  const branch = 'badge';
+  const branch = process.env.branch;
+  const repo = process.env.repo;
+  
   const repositorio = process.env.GITHUB_REPOSITORY.split('/')[1];
   const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
 
@@ -38,7 +39,7 @@ const main = async () => {
   try {
     const { data } = await octokit.repos.getContent({
       owner,
-      repo: 'action-badge-deploy',
+      repo: repo,
       path: `badges/${repositorio}/${envName}.svg`,
       ref: branch
     });
@@ -48,7 +49,7 @@ const main = async () => {
     }
   } catch (error) {
     if (error.status === 404) {
-      console.log('� Badge remoto ainda não existe. Será criado.');
+      console.log('⚠️ Badge remoto ainda não existe. Será criado.');
     } else {
       console.error(`❌ Erro ao buscar conteúdo remoto: ${error.message}`);
     }
@@ -63,33 +64,33 @@ const main = async () => {
       const versaoMatch = ultimaTag.match(/>([\d.]+)</);
       if (versaoMatch) {
         versaoAtual = versaoMatch[1];
-        console.log(`� Versão atual encontrada no badge: ${versaoAtual}`);
+        console.log(`✅ Versão atual encontrada no badge: ${versaoAtual}`);
       }
     }
   }
   
   // Comparar com a nova versão
   if (versaoAtual === version) {
-    console.log(`� A versão "${version}" já está presente no badge. Nenhuma ação será executada.`);
+    console.log(`⚠️ A versão "${version}" já está presente no badge. Nenhuma ação será executada.`);
     return;
   } else {
     console.log(`✅ A versão será atualizada de "${versaoAtual || 'nenhuma'}" para "${version}". Continuando com o processo...`);
   }
 
   // Verificar se as variáveis estão definidas
-  if (!envName || !version || !TOKEN || !repositorio || !owner) {
+  if (!envName || !version || !TOKEN || !sitorio || !owner) {
     throw new Error('Uma ou mais variáveis de ambiente não estão definidas.');
   }
 
   console.log(`============================================================`);
   console.log(`Environment: ${envName}`);
   console.log(`Version: ${version}`);
-  console.log(`Repository: ${repositorio}`);
+  console.log(`Repository: ${sitorio}`);
   console.log(`Branch: ${branch}`);
 
   const git = simpleGit();
-  // Variavel com o caminho do repo
-  const repoPath = '/home/runner/_work/next-ca-gateway-interno-azure/action-badge-deploy';
+  // Variavel com o caminho do 
+  const Path = '/home/runner/_work/next-ca-gateway-interno-azure/action-badge-deploy';
 
   // Log do diretório atual
   console.log(`Diretório atual: ${process.cwd()}`);
