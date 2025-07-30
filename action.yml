@@ -1,0 +1,51 @@
+name: 'Generate Badge'
+description: 'Generate a responsive SVG badge and push to repository'
+inputs:
+  repo:
+    description: 'Repo de badges'
+    default: 'badges'
+  branch:
+    description: 'Branch de Commit da Badge'
+    default: 'main'
+  environment:
+    description: 'Nome do Ambiente'
+    required: true
+  version:
+    description: 'Numero de Versão'
+    required: true
+  token:
+    description: 'Token'
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    # - name: � Generate Token �
+    #   if: ${{ !inputs.token }}
+    #   uses: Bradesco-Actions/generate-token@v1
+    #   id: generate-token
+    #   with:
+    #     org: ${{ env.org }}
+    #     app-id: ${{ env.appid }}
+    #     app-private-key: ${{ env.appprivatekey }}
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: |
+        cd ${{ github.action_path }}/script/
+        npm install fs path simple-git @octokit/rest canvas child_process
+      shell: bash
+
+    - name: Generate badge
+      env:
+        repo: ${{ inputs.repo }}
+        branch: ${{ inputs.branch }}
+        environment: ${{ inputs.environment }}
+        version: ${{ inputs.version }}
+        token: ${{ inputs.token }}
+      run: node ${{ github.action_path }}/script/generate_badge.js
+      shell: bash
