@@ -3,7 +3,7 @@ description: 'Generate a responsive SVG badge and push to repository'
 inputs:
   repo:
     description: 'Repo de badges'
-    default: 'badges'
+    default: 'ifGarcia/badges'
   branch:
     description: 'Branch de Commit da Badge'
     default: 'main'
