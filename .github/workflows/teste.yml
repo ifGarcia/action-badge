@@ -1,0 +1,36 @@
+name: Teste Badge
+
+on:
+  workflow_dispatch:
+
+jobs:
+  teste-badge:
+    runs-on: ubuntu-latest
+    steps:
+      # - name: Generate Token
+      #   uses: Actions/generate-token@v1
+      #   id: generate-token
+      #   with:
+      #     org: ${{ env.org }}
+      #     app-id: ${{ env.appid }}
+      #     app-private-key: ${{ env.key }}
+
+      - name: Generate Badge - Com
+        uses: ifGarcia/action-badge@main
+        with:
+          environment: env-com-token
+          version: ${{ github.run_number }}
+          token: ${{ steps.generate-token.outputs.token }}
+
+      - name: Generate Badge - Com repetido
+        uses: ifGarcia/action-badge@main
+        with:
+          environment: env-com-token-rep
+          version: 20
+          token: ${{ steps.generate-token.outputs.token }}
+
+      - name: Generate Badge - Sem
+        uses: ifGarcia/action-badge@main
+        with:
+          environment: env-sem-token
+          version: ${{ github.run_number }}
