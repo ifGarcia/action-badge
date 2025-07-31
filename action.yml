@@ -1,5 +1,7 @@
 name: 'Generate Badge'
 description: 'Generate a responsive SVG badge and push to repository'
+author: '@ifGarcia'
+
 inputs:
   repo:
     description: 'Repo de badges'
@@ -17,35 +19,38 @@ inputs:
     description: 'Token'
     required: false
 
+env:
+  repo: ${{ inputs.repo }}
+  branch: ${{ inputs.branch }}
+  environment: ${{ inputs.environment }}
+  version: ${{ inputs.version }}
+  token: ${{ inputs.token }}
+
 runs:
-  using: 'composite'
-  steps:
-    # - name: � Generate Token �
-    #   if: ${{ !inputs.token }}
-    #   uses: Actions/generate-token@v1
-    #   id: generate-token
-    #   with:
-    #     org: ${{ env.org }}
-    #     app-id: ${{ env.appid }}
-    #     app-private-key: ${{ env.appprivatekey }}
+  using: 'node20'
+  main: 'dist/index.js'
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '18'
+# runs:
+#   using: 'composite'
+#   steps:
 
-    - name: Install dependencies
-      run: |
-        cd ${{ github.action_path }}/script/
-        npm install fs path simple-git @octokit/rest canvas child_process
-      shell: bash
+#     - name: Set up Node.js
+#       uses: actions/setup-node@v2
+#       with:
+#         node-version: '18'
 
-    - name: Generate badge
-      env:
-        repo: ${{ inputs.repo }}
-        branch: ${{ inputs.branch }}
-        environment: ${{ inputs.environment }}
-        version: ${{ inputs.version }}
-        token: ${{ inputs.token }}
-      run: node ${{ github.action_path }}/script/generate_badge.js
-      shell: bash
+#     - name: Install dependencies
+#       run: |
+#         cd ${{ github.action_path }}/script/
+#         npm install fs path simple-git @octokit/rest canvas child_process
+#       shell: bash
+
+#     - name: Generate badge
+#       env:
+#         repo: ${{ inputs.repo }}
+#         branch: ${{ inputs.branch }}
+#         environment: ${{ inputs.environment }}
+#         version: ${{ inputs.version }}
+#         token: ${{ inputs.token }}
+#       run: node ${{ github.action_path }}/script/generate_badge.js
+#       shell: bash
