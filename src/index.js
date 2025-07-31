@@ -2,6 +2,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const simpleGit = require('simple-git');
 const { createCanvas } = require('canvas');
+const core = require('@actions/core');
 
 // Função utilitária para tentativas com delay
 async function tentarComRetries(fn, maxTentativas = 3, delayMs = 2000) {
@@ -21,16 +22,15 @@ async function tentarComRetries(fn, maxTentativas = 3, delayMs = 2000) {
 
 // Função principal
 const main = async () => {
-  const environment = process.env.environment;
-  const version = process.env.version;
+  const environment = core.getInput('environment');
+  const version = core.getInput('version');
+  const TOKEN = core.getInput('token');
   
-  const TOKEN = process.env.token;
-  
-  const repo_badge = process.env.repo.split('/')[1];
-  const owner_repo_badge = process.env.repo.split('/')[0];
-  const branch_badge = process.env.branch;
+  const repo_badge = core.getInput('repo').split('/')[1];
+  const owner_repo_badge = core.getInput('repo').split('/')[0];
+  const branch_badge = core.getInput('branch');
 
-  const repo_ctrl = process.env.GITHUB_REPOSITORY.split('/')[1];
+  const repo_ctrl = core.GITHUB_REPOSITORY.split('/')[1];
 
   // Verificar se a versão já está presente no badge remoto
   console.log('Verificando versão atual do badge remoto...');
