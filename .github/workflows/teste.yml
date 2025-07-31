@@ -6,32 +6,20 @@ on:
 jobs:
   teste-badge:
     runs-on: ubuntu-latest
-    # permissions:
-    #   contents: write
     steps:
-      # - name: Generate Token
-      #   uses: Actions/generate-token@v1
-      #   id: generate-token
-      #   with:
-      #     org: ${{ env.org }}
-      #     app-id: ${{ env.appid }}
-      #     app-private-key: ${{ env.key }}
-
       - name: Generate Badge - Com
-        uses: ifGarcia/action-badge@main
+        uses: ./action.yaml
         with:
           environment: env-com-token
           version: ${{ github.run_number }}
           token: ${{ secrets.SECRET_TOKEN }}
-          # token: ${{ steps.generate-token.outputs.token }}
 
       - name: Generate Badge - Com repetido
-        uses: ifGarcia/action-badge@main
+        uses: ./action.yaml
         with:
           environment: env-com-token-rep
           version: 20
           token: ${{ secrets.SECRET_TOKEN }}
-          # token: ${{ steps.generate-token.outputs.token }}
 
       # - name: Generate Badge - Sem
       #   uses: ifGarcia/action-badge@main
