@@ -14,14 +14,14 @@ jobs:
           fetch-depth: 0
 
       - name: Generate Badge - Com
-        uses: ./action-badge/action.yml
+        uses: ./action.yml
         with:
           environment: env-com-token
           version: ${{ github.run_number }}
           token: ${{ secrets.SECRET_TOKEN }}
 
       - name: Generate Badge - Com repetido
-        uses: ./action-badge/action.yml
+        uses: ./action.yml
         with:
           environment: env-com-token-rep
           version: 20
