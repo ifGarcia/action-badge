@@ -7,21 +7,21 @@ jobs:
   teste-badge:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout - ${{ github.ref }}
         uses: actions/checkout@v4.2.2
         with:
+          ref: ${{ github.ref }}
           fetch-depth: 0
-          show-progress: false
 
       - name: Generate Badge - Com
-        uses: ./action.yaml
+        uses: ./action-badge/action.yml
         with:
           environment: env-com-token
           version: ${{ github.run_number }}
           token: ${{ secrets.SECRET_TOKEN }}
 
       - name: Generate Badge - Com repetido
-        uses: ./action.yaml
+        uses: ./action-badge/action.yml
         with:
           environment: env-com-token-rep
           version: 20
