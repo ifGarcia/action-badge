@@ -20,13 +20,6 @@ inputs:
     required: false
 
 runs:
-  env:
-    repo: ${{ inputs.repo }}
-    branch: ${{ inputs.branch }}
-    environment: ${{ inputs.environment }}
-    version: ${{ inputs.version }}
-    token: ${{ inputs.token }}
-  
   using: 'node20'
   main: 'dist/index.js'
 
