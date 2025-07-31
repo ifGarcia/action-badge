@@ -7,6 +7,12 @@ jobs:
   teste-badge:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+          show-progress: false
+
       - name: Generate Badge - Com
         uses: ./action.yaml
         with:
